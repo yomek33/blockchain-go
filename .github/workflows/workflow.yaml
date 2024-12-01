@@ -1,0 +1,15 @@
+name: Go Build and Run
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+      - run: go build -o app main.go
+      - run: ./app
