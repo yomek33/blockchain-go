@@ -5,17 +5,17 @@ import (
 
 	"github.com/boltdb/bolt"
 )
-	const 
-( dbFile = "blockchain.db"
-blockBucket = "blocks"
-dbOwnerReadWrite = 0600
+
+const (
+	dbFile           = "blockchain.db"
+	blockBucket      = "blocks"
+	dbOwnerReadWrite = 0600
 )
 
 type BlockChain struct {
 	tip []byte
 	db  *bolt.DB
 }
-
 
 func NewBlockChain() *BlockChain {
 	var tip []byte
@@ -40,7 +40,7 @@ func NewBlockChain() *BlockChain {
 
 		return nil
 	})
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 		return nil
 	}
@@ -50,28 +50,28 @@ func NewBlockChain() *BlockChain {
 	return &bc
 }
 
-func (bc *BlockChain) AddBlock(data string){
+func (bc *BlockChain) AddBlock(data string) {
 	var lastHash []byte
 
 	err := bc.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blockBucket))
 		lastHash = b.Get([]byte("l"))
-		
+
 		return nil
 	})
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 	newBlock := NewBlock(data, lastHash)
 	err = bc.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blockBucket))
 		err := b.Put(newBlock.Hash, newBlock.Serialize())
-		if err != nil{
+		if err != nil {
 			log.Println(err)
 			return nil
 		}
 		err = b.Put([]byte("l"), newBlock.Hash)
-		if err != nil{
+		if err != nil {
 			log.Println(err)
 			return nil
 		}
