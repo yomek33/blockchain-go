@@ -2,13 +2,15 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 )
 
 func main() {
+	start := time.Now()
 	bc := NewBlockChain()
 
 	bc.AddBlock("Send 1 BTC to Ivan")
@@ -18,45 +20,24 @@ func main() {
 		fmt.Printf("Prev.Hash: %x\n", block.PrevBlockHash)
 		fmt.Printf("Data: %s\n", block.Data)
 		fmt.Printf("Hash: %x\n", block.Hash)
+		pow := NewProofOfWork(block)
+		fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
 		fmt.Println()
 	}
+
+	end := time.Now()
+	elapsed := end.Sub(start)
+	fmt.Printf("Elapsed time: %s\n", elapsed)
 }
 
-type BlockChain struct {
-	blocks []*Block
-}
+// util
+// convert an int64 to a byte array
+func IntToHex(num int64) []byte {
+	buff := new(bytes.Buffer)
+	err := binary.Write(buff, binary.BigEndian, num)
+	if err != nil {
+		log.Panic(err)
+	}
 
-func (bs *BlockChain) AddBlock(data string) {
-	prevBlock := bs.blocks[len(bs.blocks)-1]
-	newBlock := NewBlock(data, prevBlock.Hash)
-	bs.blocks = append(bs.blocks, newBlock)
-}
-
-func NewBlockChain() *BlockChain {
-	return &BlockChain{[]*Block{NewGenesisBlock()}}
-}
-
-type Block struct {
-	Timestamp     int64
-	Data          []byte
-	PrevBlockHash []byte
-	Hash          []byte
-}
-
-func NewGenesisBlock() *Block {
-	return NewBlock("Genesis Block", []byte{})
-}
-
-func NewBlock(data string, prevBlockHash []byte) *Block {
-	block := &Block{time.Now().Unix(), []byte(data), prevBlockHash, []byte{}}
-	block.SetHash()
-	return block
-}
-
-func (b *Block) SetHash() {
-	timestamp := []byte(strconv.FormatInt(b.Timestamp, 10))
-	headers := bytes.Join([][]byte{b.PrevBlockHash, b.Data, timestamp}, []byte{})
-	hash := sha256.Sum256(headers)
-
-	b.Hash = hash[:]
+	return buff.Bytes()
 }
