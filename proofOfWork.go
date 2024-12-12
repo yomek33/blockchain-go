@@ -9,7 +9,7 @@ import (
 )
 
 // proof of work
-const targetBits = 24 //任意の数字
+const targetBits = 12 //任意の数字
 var maxNonce = math.MaxInt64
 
 type ProofOfWork struct {
